@@ -1,0 +1,43 @@
+version: 2
+
+builds:
+  - binary: gokazi
+    main: ./cmd/main.go
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - windows
+      - darwin
+      - linux
+    goarch:
+      - amd64
+      - arm64
+    goarm:
+      - '7'
+    flags:
+      - -safe
+      - -trimpath
+    ldflags:
+      - -s -w -X github.com/foomo/gokazi/cmd.version={{.Version}}
+
+archives:
+  - format: tar.gz
+    format_overrides:
+      - goos: windows
+        format: zip
+
+release:
+  prerelease: auto
+
+changelog:
+  use: github-native
+
+brews:
+  - repository:
+      owner: foomo
+      name: homebrew-tap
+    caveats: "gokazi -h"
+    homepage: "https://github.com/foomo/gokazi"
+    description: "CLI process manager"
+    test: |
+      system "#{bin}/gokazi --version"

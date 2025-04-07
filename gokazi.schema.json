@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/foomo/gokazi/pkg/config/github.com.foomo.gokazi.pkg.config.-config",
+  "$ref": "#/$defs/github.com.foomo.gokazi.pkg.config.Config",
+  "$defs": {
+    "[]string": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "github.com.foomo.gokazi.pkg.config.Config": {
+      "properties": {
+        "version": {
+          "type": "string",
+          "description": "Config version"
+        },
+        "tasks": {
+          "$ref": "#/$defs/map[string]config.Task",
+          "description": "Tasks definitions"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "github.com.foomo.gokazi.pkg.config.Task": {
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Task name"
+        },
+        "description": {
+          "type": "string",
+          "description": "Task description"
+        },
+        "path": {
+          "type": "string",
+          "description": "Task path"
+        },
+        "cwd": {
+          "type": "string",
+          "description": "Task working directory"
+        },
+        "args": {
+          "$ref": "#/$defs/[]string",
+          "description": "Task Args"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "map[string]config.Task": {
+      "additionalProperties": {
+        "$ref": "#/$defs/github.com.foomo.gokazi.pkg.config.Task"
+      },
+      "type": "object"
+    }
+  }
+}

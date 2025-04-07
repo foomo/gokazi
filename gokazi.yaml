@@ -1,0 +1,15 @@
+# yaml-language-server: $schema=gokazi.schema.json
+version: '1.0'
+
+tasks:
+  list:
+    name: gokazi
+    description: Own listing process
+    path: $PWD/bin
+    cwd: $PWD
+    args: [list]
+  list-debug:
+    name: gokazi
+    path: $PWD/bin
+    cwd: $PWD
+    args: [list, --debug]
