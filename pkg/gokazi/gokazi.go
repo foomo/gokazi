@@ -6,7 +6,6 @@ import (
 	"os/exec"
 	"path"
 	"slices"
-	"syscall"
 	"time"
 
 	"github.com/foomo/gokazi/pkg/config"
@@ -45,13 +44,8 @@ func (g *Gokazi) Start(ctx context.Context, id string, cmd *exec.Cmd) error {
 		return ErrAlreadyRunning
 	}
 
-	cmd.SysProcAttr = &syscall.SysProcAttr{
-		Setpgid: true,
-		Pgid:    0,
-	}
-
 	g.l.Info("Starting: " + cmd.String())
-	if err := cmd.Start(); err != nil {
+	if err := forkProcess(cmd); err != nil {
 		return err
 	}
 
