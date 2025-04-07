@@ -1,8 +1,5 @@
-SHELL					:= /bin/sh
-MAKEFLAGS 		+= --no-builtin-rules
-MAKEFLAGS 		+= --warn-undefined-variables
-.SHELLFLAGS 	:= -eu -o errexit -o pipefail -c
 .DEFAULT_GOAL	:= help
+-include .makerc
 
 # --- Validation --------------------------------------------------------------
 
@@ -10,12 +7,6 @@ husky=$(shell command -v husky 2> /dev/null)
 ifndef husky
   $(error "missing executable 'husky', please install")
 endif
-
-# --- Config -----------------------------------------------------------------
-
--include .makerc
-export PATH := bin:$(PATH)
-export CGO_ENABLED := 0
 
 # --- Targets -----------------------------------------------------------------
 
@@ -34,7 +25,8 @@ doc:
 .PHONY: test
 ## Run tests
 test:
-	@GO_TEST_TAGS=-skip go test -tags=safe -coverprofile=coverage.out -race -json ./... 2>&1 | tee /tmp/gotest.log | gotestfmt
+	@GO_TEST_TAGS=-skip go test -tags=safe -coverprofile=coverage.out -race ./...
+	#@GO_TEST_TAGS=-skip go test -tags=safe -coverprofile=coverage.out -race -json ./... 2>&1 | tee /tmp/gotest.log | gotestfmt
 
 .PHONY: lint
 ## Run linter
