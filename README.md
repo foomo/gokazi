@@ -5,7 +5,7 @@
 
 # gokazi
 
-> A daemonless cli task (swaheli: kazi) manager.
+> Simple daemonless process (swaheli: task <> kazi) manager.
 
 Works by comparing processes by arguments, cwd and executable path.
 
@@ -32,6 +32,7 @@ Available Commands:
   config      Print config
   help        Help about any command
   list        List tasks
+  stop        Stop task by id
   version     Print version
 
 Flags:
