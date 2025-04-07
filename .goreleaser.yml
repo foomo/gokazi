@@ -15,8 +15,8 @@ builds:
     goarm:
       - '7'
     flags:
-      - -safe
       - -trimpath
+      - -tags=safe
     ldflags:
       - -s -w -X github.com/foomo/gokazi/cmd.version={{.Version}}
 
