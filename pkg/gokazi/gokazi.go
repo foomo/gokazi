@@ -61,7 +61,7 @@ func (g *Gokazi) Start(ctx context.Context, id string, cmd *exec.Cmd) error {
 func (g *Gokazi) Stop(ctx context.Context, id string) error {
 	task, ok := g.tasks[id]
 	if !ok {
-		return errors.Errorf("task '%s' not found", id)
+		return errors.Wrap(ErrNotFound, id)
 	}
 
 	ps, err := g.listProcesses(ctx)
@@ -70,15 +70,17 @@ func (g *Gokazi) Stop(ctx context.Context, id string) error {
 	}
 
 	p, err := g.findProcess(ctx, task, ps)
-	if err != nil {
+	if errors.Is(err, ErrNotFound) {
+		return errors.Wrap(ErrNotRunning, id)
+	} else if err != nil {
 		return err
 	}
 
 	running, err := p.IsRunningWithContext(ctx)
 	if err != nil {
-		return err
+		return errors.Wrap(err, id)
 	} else if !running {
-		return ErrNotRunning
+		return errors.Wrap(ErrNotRunning, id)
 	}
 
 	ctx, cancel := context.WithTimeout(ctx, time.Second*5)
