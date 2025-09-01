@@ -203,9 +203,11 @@ func (g *Gokazi) findProcess(ctx context.Context, task config.Task, ps []*proces
 			continue
 		}
 
-		cmdline, err := p.CmdlineSliceWithContext(ctx)
-		if err != nil || (len(task.Args) > 0 && len(lo.Intersect(cmdline[1:], task.ExpandArgs())) != len(cmdline[1:])) {
-			continue
+		if len(task.Args) > 0 {
+			cmdline, err := p.CmdlineSliceWithContext(ctx)
+			if err != nil || len(lo.Intersect(cmdline[1:], task.ExpandArgs())) != len(task.Args) {
+				continue
+			}
 		}
 
 		return p, nil
