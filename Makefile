@@ -32,7 +32,7 @@ endif
 
 .PHONY: check
 ## Run lint & tests
-check: tidy generate lint test test.demo audit
+check: tidy generate lint test audit
 
 .PHONY: lint
 ## Run linter
@@ -64,46 +64,32 @@ test.race:
 	@echo "〉go test with -race"
 	@GO_TEST_TAGS=-skip go test -coverprofile=coverage.out -tags=safe -race ./...
 
-.PHONY: test.demo
-## Run demo tests
-test.demo: install
-	@echo "〉testing demo"
-	@rm -rf tmp/test
-	@mkdir -p tmp/test
-	@cd tmp/test && \
-		git init . && \
-		git remote add origin https://github.com/foomo/posh-test-demo && \
-		posh init && \
-		echo "replace github.com/foomo/posh => ../../../" >> .posh/go.mod && \
-		make shell.build && \
-		bin/posh execute welcome demo
-
 .PHONY: build
 ## Build binary
 build:
-	@echo "〉building bin/posh"
-	@rm -f bin/posh
-	@go build -o bin/posh main.go
+	@echo "〉building bin/gokazi"
+	@rm -f bin/gokazi
+	@go build -o bin/gokazi main.go
 
 .PHONY: build.debug
 ## Build binary in debug mode
 build.debug:
-	@echo "〉building debug bin/posh"
-	@rm -f bin/posh
-	@go build -gcflags "all=-N -l" -o bin/posh main.go
+	@echo "〉building debug bin/gokazi"
+	@rm -f bin/gokazi
+	@go build -gcflags "all=-N -l" -o bin/gokazi main.go
 
 .PHONY: install
 ## Run go install
 install: GOPATH=${shell go env GOPATH}
 install:
-	@echo "〉installing $$GOPATH/bin/posh"
+	@echo "〉installing $$GOPATH/bin/gokazi"
 	@go install -a main.go
-	@mv "${GOPATH}/bin/main" "${GOPATH}/bin/posh"
+	@mv "${GOPATH}/bin/main" "${GOPATH}/bin/gokazi"
 
 .PHONY: install.debug
 ## Run go install with debug
 install.debug:
-	@echo "〉installing debug $$GOPATH/bin/posh"
+	@echo "〉installing debug $$GOPATH/bin/gokazi"
 	@go install -a -gcflags "all=-N -l" main.go
 
 ### Security

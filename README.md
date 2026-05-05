@@ -83,7 +83,7 @@ $ gokazi help
 CLI process manager
 
 Usage:
-  gogazi [command]
+  gokazi [command]
 
 Available Commands:
   completion  Generate the autocompletion script for the specified shell
@@ -95,9 +95,9 @@ Available Commands:
 
 Flags:
       --debug   enable debug logs
-  -h, --help    help for gogazi
+  -h, --help    help for gokazi
 
-Use "gogazi [command] --help" for more information about a command.
+Use "gokazi [command] --help" for more information about a command.
 ```
 
 ## Configuration

@@ -44,7 +44,3 @@ node_modules/
 
 ## Docker
 !.dockerignore
-
-## Posh
-!.posh/
-!.posh.yml
