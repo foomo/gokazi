@@ -1,6 +1,6 @@
 module github.com/foomo/gokazi
 
-go 1.24.1
+go 1.26
 
 require (
 	github.com/Code-Hex/Neo-cowsay/v2 v2.0.4

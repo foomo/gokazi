@@ -28,6 +28,7 @@ func NewList(l *slog.Logger) *cobra.Command {
 			for id, task := range cfg.Tasks {
 				gk.Add(id, task)
 			}
+
 			tasks, err := gk.List(cmd.Context())
 			if err != nil {
 				return err

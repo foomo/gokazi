@@ -24,6 +24,7 @@ func (t Task) ExpandCwd() string {
 	if t.Cwd == "" {
 		return ""
 	}
+
 	return path.Clean(os.ExpandEnv(t.Cwd))
 }
 
@@ -31,6 +32,7 @@ func (t Task) ExpandPath() string {
 	if t.Path == "" {
 		return ""
 	}
+
 	return path.Clean(os.ExpandEnv(t.Path))
 }
 
@@ -39,6 +41,7 @@ func (t Task) ExpandArgs() []string {
 	for i, arg := range t.Args {
 		ret[i] = os.ExpandEnv(arg)
 	}
+
 	return ret
 }
 
@@ -46,12 +49,15 @@ func (t Task) Match(name, cpath, cwd string, args []string) bool {
 	if t.Name != name {
 		return false
 	}
+
 	if t.Path != "" && t.ExpandPath() != cpath {
 		return false
 	}
+
 	if t.Cwd != "" && t.ExpandCwd() != cwd {
 		return false
 	}
+
 	if len(t.Args) > 0 {
 		for _, arg := range t.ExpandArgs() {
 			if !slices.Contains(args, arg) {
@@ -59,6 +65,7 @@ func (t Task) Match(name, cpath, cwd string, args []string) bool {
 			}
 		}
 	}
+
 	return true
 }
 
@@ -69,11 +76,14 @@ func (t Task) String() string {
 	} else {
 		ret += t.Name
 	}
+
 	if len(t.Args) > 0 {
 		ret += " " + strings.Join(t.ExpandArgs(), " ")
 	}
+
 	if t.Cwd != "" {
 		ret += " in " + t.ExpandCwd()
 	}
+
 	return ret
 }
