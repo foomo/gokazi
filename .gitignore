@@ -1,28 +1,56 @@
 .*
-*.zip
-*.tar
-*.out
 *.log
-/bin/
-/tmp/
+*.pid
+*.retry
+*.out
+*.tgz
+*.zip
+*.pem
+bin/
+dist/
+tmp/
 
 ## Git
 !.gitkeep
 !.gitignore
+!.gitattributes
 
 ## GitHub
 !.github/
 
+## Mise
+!.mise.toml
+
+## Lefthook
+!.lefthook.yaml
+
+## VSCode
+!.vscode/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.default.json
+
 ## Editorconfig
 !.editorconfig
 
-## Husky
-!.husky/
-!.husky.yaml
+## Docker
+!.dockerignore
 
-## Ownbrew
-!.ownbrew.yaml
+## TypeScript
+*.tsbuildinfo
 
 ## Golang
-!.golangci.yml
-!.goreleaser.yml
+go.work
+go.work.sum
+!.golangci.yaml
+!.goreleaser.yaml
+
+## Node ##
+!.npmrc
+**/node_modules/
+
+## Vitepress
+!docs/.vitepress
+docs/.vitepress/*
+!docs/.vitepress/theme/
+!docs/.vitepress/config.mts

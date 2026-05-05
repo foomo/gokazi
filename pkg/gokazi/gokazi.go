@@ -45,6 +45,7 @@ func (g *Gokazi) Start(ctx context.Context, id string, cmd *exec.Cmd) error {
 	}
 
 	g.l.Info("Starting: " + cmd.String())
+
 	if err := forkProcess(cmd); err != nil {
 		return err
 	}
@@ -116,6 +117,7 @@ func (g *Gokazi) Find(ctx context.Context, id string) (Task, error) {
 		if err != nil {
 			return Task{}, err
 		}
+
 		t.Running = running
 		t.Pid = p.Pid
 	}
@@ -136,6 +138,7 @@ func (g *Gokazi) List(ctx context.Context) (map[string]Task, error) {
 			Pid:     0,
 			Running: false,
 		}
+
 		p, err := g.findProcess(ctx, task, ps)
 		if errors.Is(err, ErrNotFound) {
 			t.Running = false
@@ -146,9 +149,11 @@ func (g *Gokazi) List(ctx context.Context) (map[string]Task, error) {
 			if err != nil {
 				return nil, err
 			}
+
 			t.Running = running
 			t.Pid = p.Pid
 		}
+
 		tasks[id] = t
 	}
 
@@ -175,9 +180,11 @@ func (g *Gokazi) listProcesses(ctx context.Context) ([]*process.Process, error) 
 		if err != nil {
 			return true
 		}
+
 		if _, ok := names[name]; !ok {
 			return true
 		}
+
 		return false
 	}), nil
 }

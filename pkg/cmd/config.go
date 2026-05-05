@@ -16,6 +16,7 @@ import (
 
 func NewConfig(l *slog.Logger, c *viper.Viper, cmd *cobra.Command) (*config.Config, error) {
 	cmd.Flags().StringSliceP("config", "c", []string{"gokazi.yaml"}, "config files (default is gokazi.yaml)")
+
 	if err := c.BindPFlag("config", cmd.Flags().Lookup("config")); err != nil {
 		return nil, err
 	}
@@ -26,9 +27,11 @@ func NewConfig(l *slog.Logger, c *viper.Viper, cmd *cobra.Command) (*config.Conf
 
 	for _, source := range c.GetStringSlice("config") {
 		var p koanf.Provider
+
 		switch source {
 		case "-":
 			l.Debug("reading config from stdin")
+
 			if b, err := io.ReadAll(cmd.InOrStdin()); err != nil {
 				return nil, err
 			} else {
@@ -38,6 +41,7 @@ func NewConfig(l *slog.Logger, c *viper.Viper, cmd *cobra.Command) (*config.Conf
 			l.Debug("reading config from file: " + source)
 			p = file.Provider(source)
 		}
+
 		if err := k.Load(p, yaml.Parser()); err != nil {
 			return nil, errors.Wrap(err, "failed to parse config")
 		}

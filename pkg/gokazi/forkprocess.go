@@ -12,5 +12,6 @@ func forkProcess(cmd *exec.Cmd) error {
 		Setpgid: true,
 		Pgid:    0,
 	}
+
 	return cmd.Start()
 }

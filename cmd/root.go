@@ -12,7 +12,7 @@ import (
 func NewRoot(l *slog.Logger) *cobra.Command {
 	c := viper.New()
 	cmd := &cobra.Command{
-		Use:           "gogazi",
+		Use:           "gokazi",
 		Short:         "CLI process manager",
 		SilenceErrors: true,
 		SilenceUsage:  true,
