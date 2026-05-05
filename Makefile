@@ -56,7 +56,7 @@ generate:
 ## Run tests
 test:
 	@echo "〉go test"
-	@GO_TEST_TAGS=-skip go test -coverprofile=coverage.out --tags=safe ./...
+	@GO_TEST_TAGS=-skip go test -coverprofile=coverage.out -tags=safe ./...
 
 .PHONY: test.race
 ## Run tests
@@ -69,36 +69,28 @@ test.race:
 build:
 	@echo "〉building bin/gokazi"
 	@rm -f bin/gokazi
-	@go build -o bin/gokazi main.go
+	@go build -o bin/gokazi ./cmd/gokazi/gokazi.go
 
 .PHONY: build.debug
 ## Build binary in debug mode
 build.debug:
 	@echo "〉building debug bin/gokazi"
 	@rm -f bin/gokazi
-	@go build -gcflags "all=-N -l" -o bin/gokazi main.go
+	@go build -gcflags "all=-N -l" -o bin/gokazi ./cmd/gokazi/gokazi.go
 
 .PHONY: install
 ## Run go install
-install: GOPATH=${shell go env GOPATH}
 install:
-	@echo "〉installing $$GOPATH/bin/gokazi"
-	@go install -a main.go
-	@mv "${GOPATH}/bin/main" "${GOPATH}/bin/gokazi"
+	@echo "〉installing $$(go env GOPATH)/bin/gokazi"
+	@go install -a ./cmd/gokazi
 
 .PHONY: install.debug
 ## Run go install with debug
 install.debug:
-	@echo "〉installing debug $$GOPATH/bin/gokazi"
-	@go install -a -gcflags "all=-N -l" main.go
+	@echo "〉installing debug $$(go env GOPATH)/bin/gokazi"
+	@go install -a -gcflags "all=-N -l" ./cmd/gokazi/gokazi.go
 
 ### Security
-
-.PHONY: tidy
-## Run go mod tidy
-tidy:
-	@echo "〉go mod tidy"
-	@go mod tidy
 
 .PHONY: audit
 ## Run security audit
@@ -108,6 +100,12 @@ audit:
 	@govulncheck ./...
 
 ### Dependencies
+
+.PHONY: tidy
+## Run go mod tidy
+tidy:
+	@echo "〉go mod tidy"
+	@go mod tidy
 
 .PHONY: outdated
 ## Show outdated direct dependencies
@@ -119,20 +117,26 @@ outdated:
 ## Show outdated direct dependencies
 upgrade:
 	@echo "〉go mod upgrade"
-	@go get -u ./...
+	@go list -u -m -f '{{if and (not .Indirect) .Update}}{{.Path}}{{end}}' all | xargs -n1 -I{} go get {}@latest
 	@$(Make) tidy
 
 ### Documentation
 
+.PHONY: docs.cli
+## Regenerate CLI reference markdown
+docs.cli:
+	@echo "〉generating docs/reference/cli"
+	@go run ./cmd/docgen
+
 .PHONY: docs
-## Open docs
-docs:
+## Open docs (regenerates CLI ref first)
+docs: docs.cli
 	@echo "〉starting docs"
 	@cd docs && bun install && bun run dev
 
 .PHONY: docs.build
-## Open docs
-docs.build:
+## Build docs (regenerates CLI ref first)
+docs.build: docs.cli
 	@echo "〉building docs"
 	@cd docs && bun install && bun run build
 
@@ -145,22 +149,32 @@ godocs:
 ### Utils
 
 .PHONY: help
+# https://patorjk.com/software/taag/#p=display&f=Tmplr&t=gokazi&x=none&v=4&h=4&w=80&we=false
+help: g=\033[0;32m
+help: b=\033[0;34m
+help: w=\033[0;90m
+help: e=\033[0m
 ## Show help text
 help:
-	@echo ""
-	@echo "gokazi"
-	@echo ""
-	@echo "Usage:\n  make [task]"
+	@echo "$(g)"
+	@echo "    ┓    •"
+	@echo "┏┓┏┓┃┏┏┓┓┓"
+	@echo "┗┫┗┛┛┗┗┻┗┗"
+	@echo " ┛"
+	@echo "with ❤ foomo by bestbytes"
+	@echo "$(e)"
+	@echo "$(b)Usage:$(e)\n  make [task]"
 	@awk '{ \
 		if($$0 ~ /^### /){ \
-			if(help) printf "%-23s %s\n\n", cmd, help; help=""; \
-			printf "\n%s:\n", substr($$0,5); \
+			if(help) printf "  %-21s $(w)%s$(e)\n\n", cmd, help; help=""; \
+			printf "$(b)\n%s:$(e)\n", substr($$0,5); \
 		} else if($$0 ~ /^[a-zA-Z0-9._-]+:/){ \
 			cmd = substr($$0, 1, index($$0, ":")-1); \
-			if(help) printf "  %-23s %s\n", cmd, help; help=""; \
+			if(help) printf "  %-21s $(w)%s$(e)\n", cmd, help; help=""; \
 		} else if($$0 ~ /^##/){ \
 			help = help ? help "\n                        " substr($$0,3) : substr($$0,3); \
 		} else if(help){ \
-			print "\n                        " help "\n"; help=""; \
+			print "\n                        $(w)" help "$(e)\n"; help=""; \
 		} \
 	}' $(MAKEFILE_LIST)
+	@echo ""

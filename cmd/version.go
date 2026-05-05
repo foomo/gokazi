@@ -7,7 +7,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var version = "latest"
+var (
+	version        = "dev"
+	commitHash     = "none"
+	buildTimestamp = "unknown"
+)
 
 func NewVersion(l *slog.Logger) *cobra.Command {
 	cmd := &cobra.Command{

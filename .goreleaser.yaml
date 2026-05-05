@@ -8,7 +8,7 @@ before:
 
 builds:
   - binary: gokazi
-    main: ./main.go
+    main: ./cmd/gokazi/gokazi.go
     env:
       - CGO_ENABLED=0
     flags:
@@ -17,6 +17,8 @@ builds:
     ldflags:
       - -s -w
       - -X github.com/foomo/gokazi/cmd.version={{.Version}}
+      - -X github.com/foomo/gokazi/cmd.commitHash={{.FullCommit}}
+      - -X github.com/foomo/gokazi/cmd.buildTimestamp={{.Timestamp}}
     goos:
       - windows
       - darwin
@@ -61,7 +63,7 @@ dockers:
       - '--pull'
       # https://github.com/opencontainers/image-spec/blob/main/annotations.md#pre-defined-annotation-keys
       - '--label=org.opencontainers.image.title={{.ProjectName}}'
-      - '--label=org.opencontainers.image.description=Project Oriented SHELL (gokazi)'
+      - '--label=org.opencontainers.image.description=Simple daemonmless process manager'
       - '--label=org.opencontainers.image.source={{.GitURL}}'
       - '--label=org.opencontainers.image.url={{.GitURL}}'
       - '--label=org.opencontainers.image.documentation={{.GitURL}}'

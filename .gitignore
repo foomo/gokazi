@@ -6,8 +6,9 @@
 *.tgz
 *.zip
 *.pem
-/bin/
-/tmp/
+bin/
+dist/
+tmp/
 
 ## Git
 !.gitkeep
@@ -32,15 +33,24 @@
 ## Editorconfig
 !.editorconfig
 
+## Docker
+!.dockerignore
+
+## TypeScript
+*.tsbuildinfo
+
 ## Golang
 go.work
 go.work.sum
 !.golangci.yaml
 !.goreleaser.yaml
 
-## Vitepress
-node_modules/
-!docs/.vitepress
+## Node ##
+!.npmrc
+**/node_modules/
 
-## Docker
-!.dockerignore
+## Vitepress
+!docs/.vitepress
+docs/.vitepress/*
+!docs/.vitepress/theme/
+!docs/.vitepress/config.mts

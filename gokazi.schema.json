@@ -12,12 +12,10 @@
     "github.com.foomo.gokazi.pkg.config.Config": {
       "properties": {
         "version": {
-          "type": "string",
-          "description": "Config version"
+          "type": "string"
         },
         "tasks": {
-          "$ref": "#/$defs/map[string]config.Task",
-          "description": "Tasks definitions"
+          "$ref": "#/$defs/map[string]config.Task"
         }
       },
       "additionalProperties": false,
@@ -26,24 +24,19 @@
     "github.com.foomo.gokazi.pkg.config.Task": {
       "properties": {
         "name": {
-          "type": "string",
-          "description": "Task name"
+          "type": "string"
         },
         "description": {
-          "type": "string",
-          "description": "Task description"
+          "type": "string"
         },
         "path": {
-          "type": "string",
-          "description": "Task path"
+          "type": "string"
         },
         "cwd": {
-          "type": "string",
-          "description": "Task working directory"
+          "type": "string"
         },
         "args": {
-          "$ref": "#/$defs/[]string",
-          "description": "Task Args"
+          "$ref": "#/$defs/[]string"
         }
       },
       "additionalProperties": false,

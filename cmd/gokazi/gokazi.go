@@ -12,14 +12,7 @@ import (
 
 func main() {
 	l := cmdx.NewLogger()
-
-	root := cmd.NewRoot(l)
-	root.AddCommand(
-		cmd.NewList(l),
-		cmd.NewStop(l),
-		cmd.NewConfig(l),
-		cmd.NewVersion(l),
-	)
+	root := cmd.New(l)
 
 	say := func(msg string) string {
 		if say, cerr := cowsay.Say(msg, cowsay.BallonWidth(80)); cerr == nil {

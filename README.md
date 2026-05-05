@@ -68,7 +68,7 @@ Download the archive for your OS/arch from the [releases page](https://github.co
 <summary><b>go install</b></summary>
 
 ```shell
-go install github.com/foomo/gokazi@latest
+go install github.com/foomo/gokazi/cmd/gokazi@latest
 ```
 
 Requires Go 1.26+.

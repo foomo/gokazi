@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 	"path"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
@@ -33,12 +34,14 @@ func TestConfig(t *testing.T) {
 
 		return strings.ReplaceAll(t.PkgPath(), "/", ".") + "." + t.Name()
 	}
-	require.NoError(t, reflector.AddGoComments("github.com/foomo/gokazi", "./"))
+	// Run from cmd/gokazi/ but reflect doc comments from the module root.
+	moduleRoot := filepath.Join(cwd, "..", "..")
+	require.NoError(t, reflector.AddGoComments("github.com/foomo/gokazi", moduleRoot))
 	schema := reflector.Reflect(&config.Config{})
 	actual, err := json.MarshalIndent(schema, "", "  ")
 	require.NoError(t, err)
 
-	filename := path.Join(cwd, "gokazi.schema.json")
+	filename := path.Join(moduleRoot, "gokazi.schema.json")
 
 	expected, err := os.ReadFile(filename)
 	if !errors.Is(err, os.ErrNotExist) {
