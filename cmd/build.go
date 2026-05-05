@@ -16,5 +16,6 @@ func New(l *slog.Logger) *cobra.Command {
 		NewConfig(l),
 		NewVersion(l),
 	)
+
 	return root
 }

@@ -18,7 +18,7 @@ func NewVersion(l *slog.Logger) *cobra.Command {
 		Use:   "version",
 		Short: "Print version",
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Println(version)
+			fmt.Println(version, commitHash, buildTimestamp)
 		},
 	}
 
