@@ -9,11 +9,15 @@ import (
 	"github.com/pterm/pterm"
 )
 
+// SlogHandler is a [slog.Handler] that renders records through pterm.
+// It carries the attributes accumulated via [SlogHandler.WithAttrs]
+// and merges them into every record it handles.
 type SlogHandler struct {
 	attrs []slog.Attr
 }
 
-// NewSlogHandler returns a new logging handler that can be intrgrated with log/slog.
+// NewSlogHandler returns a SlogHandler with no preset attributes,
+// ready to be wrapped in a [slog.Logger].
 func NewSlogHandler() *SlogHandler {
 	return &SlogHandler{}
 }

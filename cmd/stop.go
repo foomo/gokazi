@@ -9,6 +9,8 @@ import (
 	"github.com/spf13/viper"
 )
 
+// NewStop returns the "gokazi stop" subcommand, which takes a single
+// task ID argument and kills the matching running process.
 func NewStop(l *slog.Logger) *cobra.Command {
 	c := viper.New()
 

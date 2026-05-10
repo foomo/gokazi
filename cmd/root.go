@@ -8,7 +8,9 @@ import (
 	"github.com/spf13/viper"
 )
 
-// NewRoot represents the base command when called without any subcommands
+// NewRoot returns the gokazi root command without any subcommands
+// attached. It owns the persistent --debug flag, which toggles
+// pterm.PrintDebugMessages during PersistentPreRun.
 func NewRoot(l *slog.Logger) *cobra.Command {
 	c := viper.New()
 	cmd := &cobra.Command{

@@ -5,7 +5,7 @@ go 1.26
 require (
 	github.com/Code-Hex/Neo-cowsay/v2 v2.0.4
 	github.com/alecthomas/chroma v0.10.0
-	github.com/foomo/go v0.10.0
+	github.com/foomo/go v0.11.0
 	github.com/invopop/jsonschema v0.14.0
 	github.com/itchyny/json2yaml v0.1.5
 	github.com/knadh/koanf/parsers/yaml v1.1.0
@@ -23,7 +23,7 @@ require (
 
 require (
 	atomicgo.dev/cursor v0.2.0 // indirect
-	atomicgo.dev/keyboard v0.2.9 // indirect
+	atomicgo.dev/keyboard v0.2.10 // indirect
 	atomicgo.dev/schedule v0.1.0 // indirect
 	github.com/Code-Hex/go-wordwrap v1.0.0 // indirect
 	github.com/bahlo/generic-list-go v0.2.0 // indirect

@@ -13,6 +13,9 @@ var (
 	buildTimestamp = "unknown"
 )
 
+// NewVersion returns the "gokazi version" subcommand, which prints the
+// build version, commit hash, and build timestamp injected at link
+// time via -ldflags.
 func NewVersion(l *slog.Logger) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "version",
