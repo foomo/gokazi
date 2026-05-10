@@ -32,6 +32,10 @@ func init() {
 	}
 }
 
+// NewLogger returns a [slog.Logger] that routes records through pterm
+// using [github.com/foomo/gokazi/pkg/pterm.SlogHandler]. Debug records
+// are emitted only when pterm.PrintDebugMessages is enabled, which the
+// gokazi root command toggles via the --debug flag.
 func NewLogger() *slog.Logger {
 	return slog.New(ptermx.NewSlogHandler())
 }

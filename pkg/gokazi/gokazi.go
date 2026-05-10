@@ -8,23 +8,48 @@ import (
 	"slices"
 	"time"
 
+	gotime "github.com/foomo/go/time"
 	"github.com/foomo/gokazi/pkg/config"
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
 	"github.com/shirou/gopsutil/v4/process"
 )
 
+// Sentinel errors returned by [Gokazi] methods. They are wrapped with
+// the task identifier and may be tested with [errors.Is].
 var (
-	ErrNotFound       = errors.New("task not found")
-	ErrNotRunning     = errors.New("task not running")
+	// ErrNotFound is returned when no task with the given ID has been
+	// registered via [Gokazi.Add].
+	ErrNotFound = errors.New("task not found")
+	// ErrNotRunning is returned when the task exists but no matching
+	// process is currently running, or when a started process did not
+	// become visible within the wait deadline.
+	ErrNotRunning = errors.New("task not running")
+	// ErrMultipleFound is returned when more than one running process
+	// matches the same task definition. The matcher cannot disambiguate
+	// them, so the operation is refused.
+	ErrMultipleFound = errors.New("multiple tasks found")
+	// ErrAlreadyRunning is returned by [Gokazi.Start] when a process
+	// matching the task is already running.
 	ErrAlreadyRunning = errors.New("task already running")
 )
 
+// Gokazi is a daemonless process manager. It holds a set of registered
+// task definitions and answers list, find, start, and stop queries by
+// scanning the operating-system process table on each call.
+//
+// A Gokazi is not safe for concurrent use.
 type Gokazi struct {
 	l     *slog.Logger
 	tasks map[string]config.Task
 }
 
+// ------------------------------------------------------------------------------------------------
+// ~ Constructor
+// ------------------------------------------------------------------------------------------------
+
+// New returns a Gokazi with no registered tasks. The logger is used for
+// debug output during process operations.
 func New(l *slog.Logger) *Gokazi {
 	return &Gokazi{
 		l:     l,
@@ -32,33 +57,51 @@ func New(l *slog.Logger) *Gokazi {
 	}
 }
 
+// ------------------------------------------------------------------------------------------------
+// ~ Public methods
+// ------------------------------------------------------------------------------------------------
+
+// Add registers task under id. Adding a task with an existing id
+// replaces the previous definition.
 func (g *Gokazi) Add(id string, task config.Task) {
 	g.tasks[id] = task
 }
 
-// Start a detached child process
+// Start launches cmd as a detached child process for the task
+// identified by id. The child is placed in its own process group so it
+// survives the parent. Start waits up to one second for a matching
+// process to appear in the OS process table; on timeout it returns
+// [ErrNotRunning]. It returns [ErrAlreadyRunning] when a process
+// matching the task is already running, [ErrNotFound] when id is not
+// registered, and any error from forking the process.
 func (g *Gokazi) Start(ctx context.Context, id string, cmd *exec.Cmd) error {
-	if t, err := g.Find(ctx, id); err != nil {
+	t, err := g.Find(ctx, id)
+	if err != nil {
 		return err
-	} else if t.Running {
+	}
+
+	if t.Running {
 		return ErrAlreadyRunning
 	}
 
-	g.l.Info("Starting: " + cmd.String())
+	g.l.Debug("Starting: " + cmd.String())
 
 	if err := forkProcess(cmd); err != nil {
 		return err
 	}
 
-	if t, err := g.Find(ctx, id); err != nil {
-		return err
-	} else if !t.Running {
+	if err := g.WaitForRunning(ctx, id, time.Second); err != nil {
 		return ErrNotRunning
 	}
 
 	return nil
 }
 
+// Stop terminates the running process for the task identified by id by
+// sending it a kill signal. It returns [ErrNotFound] when id is not
+// registered, [ErrNotRunning] when no matching process is alive, and
+// [ErrMultipleFound] when more than one running process matches the
+// task definition. The kill itself has a five-second deadline.
 func (g *Gokazi) Stop(ctx context.Context, id string) error {
 	task, ok := g.tasks[id]
 	if !ok {
@@ -70,12 +113,18 @@ func (g *Gokazi) Stop(ctx context.Context, id string) error {
 		return err
 	}
 
-	p, err := g.findProcess(ctx, task, ps)
+	found, err := g.findProcess(ctx, task, ps)
 	if errors.Is(err, ErrNotFound) {
 		return errors.Wrap(ErrNotRunning, id)
 	} else if err != nil {
 		return err
 	}
+
+	if len(found) > 1 {
+		return errors.Wrap(ErrMultipleFound, id)
+	}
+
+	p := found[0]
 
 	running, err := p.IsRunningWithContext(ctx)
 	if err != nil {
@@ -90,6 +139,13 @@ func (g *Gokazi) Stop(ctx context.Context, id string) error {
 	return p.KillWithContext(ctx)
 }
 
+// Find returns the current state of the task identified by id. The
+// returned [Task] embeds the configured definition and reports the
+// process ID and running flag observed from the OS process table.
+// Find returns [ErrNotFound] when id is not registered and
+// [ErrMultipleFound] when more than one process matches the task
+// definition. When no process matches, Find returns the task with
+// Running=false and no error.
 func (g *Gokazi) Find(ctx context.Context, id string) (Task, error) {
 	task, ok := g.tasks[id]
 	if !ok {
@@ -107,24 +163,34 @@ func (g *Gokazi) Find(ctx context.Context, id string) (Task, error) {
 		Pid:     0,
 	}
 
-	p, err := g.findProcess(ctx, task, ps)
+	found, err := g.findProcess(ctx, task, ps)
 	if errors.Is(err, ErrNotFound) {
-		t.Running = false
+		return t, nil
 	} else if err != nil {
 		return Task{}, err
-	} else {
-		running, err := p.IsRunningWithContext(ctx)
-		if err != nil {
-			return Task{}, err
-		}
-
-		t.Running = running
-		t.Pid = p.Pid
 	}
+
+	if len(found) > 1 {
+		return Task{}, errors.Wrap(ErrMultipleFound, id)
+	}
+
+	p := found[0]
+
+	running, err := p.IsRunningWithContext(ctx)
+	if err != nil {
+		return Task{}, err
+	}
+
+	t.Running = running
+	t.Pid = p.Pid
 
 	return t, nil
 }
 
+// List returns the current state of every registered task, keyed by
+// task id. Tasks with no matching process are returned with
+// Running=false and Pid=0. List returns [ErrMultipleFound] when more
+// than one process matches the same task definition.
 func (g *Gokazi) List(ctx context.Context) (map[string]Task, error) {
 	ps, err := g.listProcesses(ctx)
 	if err != nil {
@@ -139,25 +205,47 @@ func (g *Gokazi) List(ctx context.Context) (map[string]Task, error) {
 			Running: false,
 		}
 
-		p, err := g.findProcess(ctx, task, ps)
+		found, err := g.findProcess(ctx, task, ps)
 		if errors.Is(err, ErrNotFound) {
-			t.Running = false
+			tasks[id] = t
+			continue
 		} else if err != nil {
 			return nil, err
-		} else {
-			running, err := p.IsRunningWithContext(ctx)
-			if err != nil {
-				return nil, err
-			}
-
-			t.Running = running
-			t.Pid = p.Pid
 		}
+
+		if len(found) > 1 {
+			return nil, errors.Wrap(ErrMultipleFound, id)
+		}
+
+		p := found[0]
+
+		running, err := p.IsRunningWithContext(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		t.Running = running
+		t.Pid = p.Pid
 
 		tasks[id] = t
 	}
 
 	return tasks, nil
+}
+
+// WaitForRunning blocks until the task identified by id has a matching
+// running process, the context is cancelled, or timeout elapses. It
+// polls at 100ms intervals. The error from the underlying scan is
+// propagated; on timeout the caller observes the context error.
+func (g *Gokazi) WaitForRunning(ctx context.Context, id string, timeout time.Duration) error {
+	return gotime.WaitFor(ctx, func(ctx context.Context) (bool, error) {
+		t, err := g.Find(ctx, id)
+		if err != nil {
+			return false, err
+		}
+
+		return t.Running, nil
+	}, timeout, 100*time.Millisecond)
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -189,7 +277,9 @@ func (g *Gokazi) listProcesses(ctx context.Context) ([]*process.Process, error) 
 	}), nil
 }
 
-func (g *Gokazi) findProcess(ctx context.Context, task config.Task, ps []*process.Process) (*process.Process, error) {
+func (g *Gokazi) findProcess(ctx context.Context, task config.Task, ps []*process.Process) ([]*process.Process, error) {
+	var found []*process.Process
+
 	for _, p := range ps {
 		if err := ctx.Err(); err != nil {
 			return nil, err
@@ -217,8 +307,12 @@ func (g *Gokazi) findProcess(ctx context.Context, task config.Task, ps []*proces
 			}
 		}
 
-		return p, nil
+		found = append(found, p)
 	}
 
-	return nil, ErrNotFound
+	if len(found) == 0 {
+		return nil, ErrNotFound
+	}
+
+	return found, nil
 }

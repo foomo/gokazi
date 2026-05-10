@@ -14,6 +14,15 @@ import (
 	"github.com/spf13/viper"
 )
 
+// NewConfig binds a --config / -c flag to cmd, reads every source it
+// names, and returns the merged [config.Config].
+//
+// Sources are layered in order: each subsequent source overrides keys
+// from the previous one. The literal source "-" reads YAML from the
+// command's standard input; any other source is read as a file. The
+// merged document is unmarshalled with the koanf struct tag and "/" as
+// the key delimiter. NewConfig fails when the resulting Version does
+// not equal [config.Version].
 func NewConfig(l *slog.Logger, c *viper.Viper, cmd *cobra.Command) (*config.Config, error) {
 	cmd.Flags().StringSliceP("config", "c", []string{"gokazi.yaml"}, "config files (default is gokazi.yaml)")
 

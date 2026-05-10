@@ -14,6 +14,9 @@ import (
 	"github.com/spf13/viper"
 )
 
+// NewConfig returns the "gokazi config" subcommand, which loads the
+// configuration, marshals it back to YAML, and prints the result
+// syntax-highlighted to standard output.
 func NewConfig(l *slog.Logger) *cobra.Command {
 	c := viper.New()
 

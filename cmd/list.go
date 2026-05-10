@@ -12,6 +12,9 @@ import (
 	"github.com/spf13/viper"
 )
 
+// NewList returns the "gokazi list" subcommand, which loads the
+// configuration and prints the current state (PID, running flag,
+// configured definition) of every task as syntax-highlighted JSON.
 func NewList(l *slog.Logger) *cobra.Command {
 	c := viper.New()
 
